@@ -67,9 +67,10 @@ final class CatalogTests: XCTestCase {
         XCTAssertEqual(CatalogLoader.newest([(index: 1, revision: 4), (index: 0, revision: 4)]), 0)
     }
 
-    func testDefaultAddressesAreTheTwoPublishedCopies() {
+    func testDefaultAddressesAreGitHubAndItsMirrors() {
         let urls = MoreAppsDefaults.catalogURLs
-        XCTAssertEqual(urls.map(\.host), ["raw.githubusercontent.com", "gitee.com"])
+        XCTAssertEqual(urls.map(\.host), ["raw.githubusercontent.com", "cdn.jsdelivr.net",
+                                          "fastly.jsdelivr.net", "gcore.jsdelivr.net"])
         XCTAssertTrue(urls.allSatisfy { $0.scheme == "https" && $0.lastPathComponent == "apps.json" })
     }
 

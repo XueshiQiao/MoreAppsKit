@@ -149,13 +149,14 @@ Agreed with the author on 2026-11-17:
 ### How a newer catalog reaches users
 
 The list is published as `apps.json` in the author's separate apps-list
-repository, which is pushed to two places, GitHub and Gitee, because neither is
-reachable from every network.
+repository on GitHub. Apps read it from four addresses, because no single host
+is reachable from every network: GitHub's raw address, and the jsDelivr
+network (it mirrors public GitHub repositories) under three host names.
 
 A copy of the file is also bundled in this package, so the page works offline.
-When the page is opened (at most once every 6 hours) the store asks both
-published addresses (`MoreAppsDefaults.catalogURLs`) at the same time and takes
-the answer with the highest `revision`. Among the bundled, cached and fetched
+When the page is opened (at most once every 6 hours) the store asks all the
+addresses (`MoreAppsDefaults.catalogURLs`) at the same time and takes the
+answer with the highest `revision`. Among the bundled, cached and fetched
 copies the highest `revision` wins.
 
 So, to add or change an app:
@@ -163,16 +164,20 @@ So, to add or change an app:
 1. In the apps-list repository, edit `apps.json` and **increase `revision`**.
 2. For a new app, set `icon` to an https address of a 160 px PNG (a path
    relative to `apps.json` works too), so apps already installed can show it.
-3. Publish: `git push origin main` and `git push gitee main` in that
-   repository. Every app in the field picks the change up without an update.
+3. Publish with that repository's `./publish.sh`: it pushes, tells jsDelivr to
+   refresh its copy (it otherwise lags by up to 12 hours) and checks every
+   address. Every app in the field picks the change up without an update.
 4. At the next release of this package, copy the file to
    `Sources/MoreAppsKit/Resources/apps.json` (and add
    `moreapps-icon-<id>.png` for a new app), then run
    `MOREAPPS_NETWORK_TESTS=all swift test` to prove every download installs.
 
-**The two published addresses must never change.** They are compiled into every
-app already installed, so the apps-list repository, its `main` branch and the file
-keep their names.
+**The published addresses must never change.** They are compiled into every
+app already installed, so the apps-list repository, its `main` branch and the
+file keep their names.
+
+Gitee was tried as a second host and does not work: it treats an app reading a
+raw file as link abuse ("外链滥用") and makes the repository private.
 
 An incompatible change to the file format must use a new file name, so apps
 already in use keep reading `schema` 1.
