@@ -138,29 +138,4 @@ public struct MoreAppsEvent: Equatable {
             return String(host.map { $0.isASCII && ($0.isLetter || $0.isNumber) ? $0 : "_" })
         }
     }
-
-    /// For the app on the receiving end: this launch was started by another
-    /// app's More Apps page right after installing. `source` is that app's id.
-    public static func referredLaunch(source: String) -> MoreAppsEvent {
-        MoreAppsEvent(name: "more_apps_referred_launch", properties: ["source": source])
-    }
-}
-
-public enum MoreApps {
-
-    /// Name of the environment variable set on an app that is launched right
-    /// after being installed from another app's More Apps page.
-    static let referrerEnvironmentKey = "MOREAPPS_REFERRER"
-
-    /// When this process was launched by another app's More Apps page, that
-    /// app's catalog id (`anydrag`). Nil on every ordinary launch.
-    ///
-    /// A host app reads this once at startup and reports
-    /// `MoreAppsEvent.referredLaunch(source:)`, which tells the installed app's
-    /// own dashboard which sibling app sent the user.
-    public static var launchReferrer: String? {
-        guard let value = ProcessInfo.processInfo.environment[referrerEnvironmentKey],
-              MoreApp.isValidID(value) else { return nil }
-        return value
-    }
 }

@@ -179,14 +179,6 @@ public final class MoreAppsStore: ObservableObject, @unchecked Sendable {
         apps.first { $0.id == featuredID }
     }
 
-    /// The catalog id of the host app (`anydrag`), used as the referrer handed
-    /// to apps it installs.
-    public var hostAppID: String {
-        if let own = catalog.apps.first(where: isHost) { return own.id }
-        let last = hostBundleID.split(separator: ".").last.map { $0.lowercased() } ?? "unknown"
-        return MoreApp.isValidID(last) ? last : "unknown"
-    }
-
     /// Whether Get can install for the user, as opposed to sending them to a
     /// browser download.
     public var canInstallDirectly: Bool {
@@ -400,12 +392,12 @@ public final class MoreAppsStore: ObservableObject, @unchecked Sendable {
         case .installed(let url):
             states[app.id] = .installed
             emit(.installSucceeded(app, seconds: Int(Date().timeIntervalSince(started).rounded())))
-            launch(url, referred: true)
+            launch(url)
         case .alreadyPresent(let url):
             // The app turned out to be in the Applications folder already.
             // Nothing was installed, so no install is reported; just open it.
             states[app.id] = .installed
-            launch(url, referred: false)
+            launch(url)
         case .needsManualInstall(let diskImage):
             // The Applications folder is not writable for this account. Show the
             // verified disk image so the user can drag the app themselves.
@@ -429,17 +421,11 @@ public final class MoreAppsStore: ObservableObject, @unchecked Sendable {
             return
         }
         emit(.openClicked(app))
-        launch(url, referred: false)
+        launch(url)
     }
 
-    private func launch(_ url: URL, referred: Bool) {
-        let configuration = NSWorkspace.OpenConfiguration()
-        if referred {
-            // Tells the launched app which sibling installed it. An app that
-            // does not look for the variable is unaffected.
-            configuration.environment = [MoreApps.referrerEnvironmentKey: hostAppID]
-        }
-        NSWorkspace.shared.openApplication(at: url, configuration: configuration, completionHandler: nil)
+    private func launch(_ url: URL) {
+        NSWorkspace.shared.openApplication(at: url, configuration: NSWorkspace.OpenConfiguration(), completionHandler: nil)
     }
 
     private func openAppStore(_ url: URL) {

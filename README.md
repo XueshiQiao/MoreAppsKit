@@ -73,16 +73,7 @@ show the English one).
    }
    ```
 
-4. At launch, report a referred launch (see Analytics):
-
-   ```swift
-   if let source = MoreApps.launchReferrer {
-       let event = MoreAppsEvent.referredLaunch(source: source)
-       Analytics.track(event.name, event.properties)
-   }
-   ```
-
-5. When the app's language setting changes, set `moreApps.language`.
+4. When the app's language setting changes, set `moreApps.language`.
    Pass the host's own code as it is (`zh`, `zh-CN`, `ja`): the package picks
    the nearest language it has, and English when it has none.
 
@@ -251,19 +242,12 @@ the same names, so the dashboards of different apps are comparable.
 | `more_apps_homepage_clicked` | `target` | a row was clicked |
 | `more_apps_badge_clicked` | `target`, `badge` (`github`, `app_store`) | a round icon button beside the main button was clicked |
 | `more_apps_catalog_fetched` | `used` (`github`, `jsdelivr`, `jsdelivr_fastly`, `jsdelivr_gcore`, or `none`), `revision`, and one property per address asked, named like the values of `used`, each `ok` or `failed` | the list was looked for on the network: at most once every 6 hours, when the page is opened. Shows which hosts are reachable for real users; split it by country in the dashboard. |
-| `more_apps_referred_launch` | `source` | reported by the *installed* app, see below |
 
 `target` is the catalog id of the promoted app (`qduo`). No event describes the
 user's other software.
 
 The funnel in the host's dashboard: `viewed` → `get_clicked` →
 `install_succeeded`, split by `target`.
-
-**The receiving side.** An app installed from the page is launched with the
-environment variable `MOREAPPS_REFERRER` set to the installing app's id.
-`MoreApps.launchReferrer` reads it. The installed app reports
-`more_apps_referred_launch` with that `source`, so its own dashboard shows
-which sibling apps send users. It fires on that first launch only.
 
 ## Development
 

@@ -79,7 +79,6 @@ final class StoreTests: XCTestCase {
         XCTAssertEqual(store.state(for: store.apps[0]), .available)
         XCTAssertEqual(store.state(for: store.apps[2]), .unsupported(minOS: "99.0"))
         XCTAssertEqual(store.state(for: store.apps[3]), .installed)
-        XCTAssertEqual(store.hostAppID, "host")
     }
 
     func testNothingIsFeaturedOnceEverythingIsInstalled() {
@@ -88,9 +87,8 @@ final class StoreTests: XCTestCase {
         XCTAssertEqual(store.apps.map(\.id), ["future", "one", "two", "store"])
     }
 
-    func testHostThatIsNotInTheCatalogStillGetsAnID() {
+    func testWithAHostThatIsNotInTheCatalogNothingIsLeftOut() {
         let (store, _) = makeStore(host: "org.example.Somebody-Else")
-        XCTAssertEqual(store.hostAppID, "somebody-else")
         XCTAssertEqual(store.apps.first?.id, "host")   // the catalog's "host" app is now just another app
     }
 
@@ -185,7 +183,5 @@ final class StoreTests: XCTestCase {
         XCTAssertEqual(MoreAppsEvent.badgeClicked(demo, badge: .github),
                        MoreAppsEvent(name: "more_apps_badge_clicked", properties: ["target": "demo", "badge": "github"]))
         XCTAssertEqual(MoreAppsEvent.badgeClicked(demo, badge: .appStore).properties["badge"], "app_store")
-        XCTAssertEqual(MoreAppsEvent.referredLaunch(source: "anydrag"),
-                       MoreAppsEvent(name: "more_apps_referred_launch", properties: ["source": "anydrag"]))
     }
 }
