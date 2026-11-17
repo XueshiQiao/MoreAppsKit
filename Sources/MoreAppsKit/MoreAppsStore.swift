@@ -452,6 +452,20 @@ public final class MoreAppsStore: ObservableObject, @unchecked Sendable {
         NSWorkspace.shared.open(url)
     }
 
+    /// The GitHub mark after an app's name was clicked: opens its repository.
+    public func openSource(of app: MoreApp) {
+        guard let url = app.github else { return }
+        emit(.badgeClicked(app, badge: .github))
+        NSWorkspace.shared.open(url)
+    }
+
+    /// The App Store mark after an app's name was clicked: opens its store page.
+    public func openStorePage(of app: MoreApp) {
+        guard case .appStore(let url) = app.install else { return }
+        emit(.badgeClicked(app, badge: .appStore))
+        openAppStore(url)
+    }
+
     /// "Download in browser", offered on a row whose install failed.
     public func downloadInBrowser(_ app: MoreApp) {
         guard let url = app.diskImageURL(for: .current) ?? app.homepage else { return }

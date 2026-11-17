@@ -137,7 +137,10 @@ private struct FeaturedCard: View {
                 FailureLine(store: store, app: app)
             }
             Spacer(minLength: 8)
-            MoreAppActionButton(store: store, app: app, placement: .featured, prominent: true)
+            HStack(spacing: 8) {
+                MoreAppBadges(store: store, app: app, prominent: true)
+                MoreAppActionButton(store: store, app: app, placement: .featured, prominent: true)
+            }
         }
         .padding(.vertical, 10)
         .contentShape(Rectangle())
@@ -176,7 +179,10 @@ struct MoreAppRow: View {
                 FailureLine(store: store, app: app)
             }
             Spacer(minLength: 8)
-            MoreAppActionButton(store: store, app: app, placement: .list)
+            HStack(spacing: 6) {
+                MoreAppBadges(store: store, app: app)
+                MoreAppActionButton(store: store, app: app, placement: .list)
+            }
         }
         .padding(.vertical, 3)
         .contentShape(Rectangle())
@@ -184,6 +190,88 @@ struct MoreAppRow: View {
         .help(store.text("row.help", app.name))
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("moreapps.row.\(app.id)")
+    }
+}
+
+// MARK: - Badges
+
+/// The round icon buttons to the left of a row's main button: a GitHub mark
+/// when the app's source is public (opens the repository), and an App Store
+/// mark when the app is on the Mac App Store (opens its store page).
+///
+/// They sit beside the main button, at its height, so everything clickable in
+/// a row is in one place.
+struct MoreAppBadges: View {
+    @ObservedObject var store: MoreAppsStore
+    let app: MoreApp
+    /// The larger size, for the featured card.
+    var prominent = false
+
+    /// The main button of an App Store app that is not installed already says
+    /// "App Store" and opens the same page, so the mark would repeat it.
+    private var showsStoreBadge: Bool {
+        guard app.isAppStore else { return false }
+        switch store.state(for: app) {
+        case .installed, .unsupported: return true
+        default: return false
+        }
+    }
+
+    var body: some View {
+        if showsStoreBadge {
+            BadgeButton(badge: .appStore, appID: app.id, prominent: prominent,
+                        help: store.text("badge.appstore.help", app.name)) {
+                store.openStorePage(of: app)
+            }
+        }
+        if app.github != nil {
+            BadgeButton(badge: .github, appID: app.id, prominent: prominent,
+                        help: store.text("badge.github.help", app.name)) {
+                store.openSource(of: app)
+            }
+        }
+    }
+}
+
+private struct BadgeButton: View {
+    let badge: MoreAppsEvent.Badge
+    let appID: String
+    let prominent: Bool
+    let help: String
+    let action: () -> Void
+    @State private var hovering = false
+
+    // The same height as `MoreAppActionButton`'s capsule, so the two line up.
+    private var diameter: CGFloat { prominent ? 28 : 24 }
+    private var glyph: CGFloat { prominent ? 15 : 13 }
+
+    var body: some View {
+        Button(action: action) {
+            Image(nsImage: Self.image(for: badge))
+                .resizable()
+                .renderingMode(.template)
+                .interpolation(.high)
+                .frame(width: glyph, height: glyph)
+                .foregroundStyle(hovering ? Color.primary : Color.secondary)
+                .frame(width: diameter, height: diameter)
+                .background(Circle().fill(Color.primary.opacity(hovering ? 0.14 : 0.08)))
+                .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .onHover { hovering = $0 }
+        .help(help)
+        .accessibilityLabel(help)
+        .accessibilityIdentifier("moreapps.badge.\(badge.rawValue).\(appID)")
+    }
+
+    /// The glyphs are bundled as black-on-clear images and drawn as templates,
+    /// so they take the text colour in light and dark mode.
+    private static func image(for badge: MoreAppsEvent.Badge) -> NSImage {
+        let name = badge == .github ? "moreapps-badge-github" : "moreapps-badge-appstore"
+        guard let url = Bundle.module.url(forResource: name, withExtension: "png"),
+              let image = NSImage(contentsOf: url) else { return NSImage() }
+        image.isTemplate = true
+        return image
     }
 }
 

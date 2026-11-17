@@ -19,6 +19,14 @@ public struct MoreAppsEvent: Equatable {
         case list
     }
 
+    /// The small marks shown after an app's name.
+    public enum Badge: String, Equatable {
+        /// The app's source is public: opens its GitHub repository.
+        case github
+        /// The app is on the Mac App Store: opens its store page.
+        case appStore = "app_store"
+    }
+
     public let name: String
     public let properties: [String: String]
 
@@ -86,6 +94,12 @@ public struct MoreAppsEvent: Equatable {
 
     static func homepageClicked(_ app: MoreApp) -> MoreAppsEvent {
         MoreAppsEvent(name: "more_apps_homepage_clicked", properties: ["target": app.id])
+    }
+
+    /// A mark after the app's name was clicked. `badge` is `github` or
+    /// `app_store`.
+    static func badgeClicked(_ app: MoreApp, badge: Badge) -> MoreAppsEvent {
+        MoreAppsEvent(name: "more_apps_badge_clicked", properties: ["target": app.id, "badge": badge.rawValue])
     }
 
     /// For the app on the receiving end: this launch was started by another

@@ -50,19 +50,43 @@ final class CatalogLoader {
         return Loaded(catalog: catalog, source: source)
     }
 
-    /// Tries each catalog URL in order and returns the first one that answers
-    /// with a valid catalog, saving it to the cache.
+    /// Asks every catalog address at the same time and returns the valid
+    /// answer with the highest revision, saving it to the cache.
+    ///
+    /// The addresses are copies of one file on different hosts. Not every
+    /// network reaches each host, so waiting for one before trying the next
+    /// would cost a full timeout; and one copy can lag behind the other, so the
+    /// first answer is not necessarily the newest. When two answers have the
+    /// same revision the address listed first wins.
     func fetch() async -> Loaded? {
-        for url in urls {
-            guard let data = await get(url, limit: Self.maxCatalogBytes),
-                  let catalog = try? MoreAppsCatalog.decode(data) else { continue }
-            try? FileManager.default.createDirectory(at: cacheDirectory, withIntermediateDirectories: true)
-            try? data.write(to: cacheDirectory.appendingPathComponent(Self.catalogFile), options: .atomic)
-            try? url.absoluteString.write(to: cacheDirectory.appendingPathComponent(Self.sourceFile),
-                                          atomically: true, encoding: .utf8)
-            return Loaded(catalog: catalog, source: url)
+        typealias Answer = (index: Int, url: URL, data: Data, catalog: MoreAppsCatalog)
+        let answers = await withTaskGroup(of: Answer?.self) { group -> [Answer] in
+            for (index, url) in urls.enumerated() {
+                group.addTask { [self] in
+                    guard let data = await get(url, limit: Self.maxCatalogBytes),
+                          let catalog = try? MoreAppsCatalog.decode(data) else { return nil }
+                    return (index, url, data, catalog)
+                }
+            }
+            var found: [Answer] = []
+            for await answer in group {
+                if let answer { found.append(answer) }
+            }
+            return found
         }
-        return nil
+        guard let best = Self.newest(answers.map { (index: $0.index, revision: $0.catalog.revision) }),
+              let answer = answers.first(where: { $0.index == best }) else { return nil }
+        try? FileManager.default.createDirectory(at: cacheDirectory, withIntermediateDirectories: true)
+        try? answer.data.write(to: cacheDirectory.appendingPathComponent(Self.catalogFile), options: .atomic)
+        try? answer.url.absoluteString.write(to: cacheDirectory.appendingPathComponent(Self.sourceFile),
+                                             atomically: true, encoding: .utf8)
+        return Loaded(catalog: answer.catalog, source: answer.url)
+    }
+
+    /// Which answer to use: the highest revision, and among equals the address
+    /// that comes first in the list. Returns that answer's index.
+    static func newest(_ answers: [(index: Int, revision: Int)]) -> Int? {
+        answers.min { ($1.revision, $0.index) < ($0.revision, $1.index) }?.index
     }
 
     // MARK: Icons

@@ -20,6 +20,8 @@
 "downloading.help" = "クリックでダウンロードを中止";
 "open.help" = "%@ を開く";
 "row.help" = "%@ の Web サイトを開く";
+"badge.github.help" = "%@ のソースコードを GitHub で見る";
+"badge.appstore.help" = "%@ を App Store で見る";
 
 /* Entry row on the About page: number of apps */
 "entry.count" = "%ld 個のアプリ";

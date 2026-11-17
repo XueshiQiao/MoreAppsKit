@@ -23,6 +23,10 @@ show the English one).
 
   An App Store app shows "App Store" and opens its store page. An app that
   needs a newer macOS shows "Requires macOS 14" and no button.
+- To the left of the button there can be round icon buttons: a GitHub mark
+  when the app's source is public (click: its repository) and an App Store mark
+  when it is on the Mac App Store (click: its store page; not shown while the
+  main button itself says "App Store").
 - The app showing the page is left out of its own list.
 - With more than 8 apps the page gets a search field.
 - `MoreAppsEntryRow` is a single row (icons, count, chevron) for an About
@@ -96,8 +100,10 @@ that pops up on its own. Cross-promotion stays out of the feature list.
 
 ## The catalog
 
-`Sources/MoreAppsKit/Resources/apps.json` is the list of apps. The order in the
-file is the display priority.
+`apps.json` is the list of apps. The order in the file is the display priority.
+It is published from the author's apps-list repository (see below); the copy in
+`Sources/MoreAppsKit/Resources/` is what the page shows before it has reached
+the network.
 
 ```json
 {
@@ -124,6 +130,7 @@ file is the display priority.
 | `tagline` | One line per language code. Falls back to `en`. |
 | `minOS` | Lowest macOS version that runs the app. |
 | `icon` | Only for an app whose icon is not bundled: an https URL, or a path relative to the catalog's URL. |
+| `github` | Optional. The app's public repository, `https://github.com/<owner>/<repository>`. The page then shows a GitHub button beside the main button that opens it. Leave it out for an app whose macOS source is not public. Anything that is not an https link on github.com is ignored. |
 | `install` | `{"kind":"dmg","url":…}` for one universal image, `{"kind":"dmg","urls":{"arm64":…,"x86_64":…}}` for one image per processor, or `{"kind":"appStore","url":…}`. |
 
 Rules the decoder enforces: every link must be `https`; an app that fails to
@@ -141,20 +148,31 @@ Agreed with the author on 2026-11-17:
 
 ### How a newer catalog reaches users
 
-A copy of `apps.json` is bundled, so the page works offline. When the page is
-opened (at most once every 6 hours) the store also fetches the catalog from
-`MoreAppsDefaults.catalogURLs`, tried in order: the author's website first,
-then the raw file in this repository. Among the bundled, cached and fetched
-copies the one with the highest `revision` wins.
+The list is published as `apps.json` in the author's separate apps-list
+repository, which is pushed to two places, GitHub and Gitee, because neither is
+reachable from every network.
+
+A copy of the file is also bundled in this package, so the page works offline.
+When the page is opened (at most once every 6 hours) the store asks both
+published addresses (`MoreAppsDefaults.catalogURLs`) at the same time and takes
+the answer with the highest `revision`. Among the bundled, cached and fetched
+copies the highest `revision` wins.
 
 So, to add or change an app:
 
-1. Edit `apps.json` and **increase `revision`**.
-2. For a new app, add `moreapps-icon-<id>.png` (160 px) to `Resources/`, or set
-   `icon` so existing installs can download it.
-3. Publish: push this repository and upload the same file to the website.
-   Every app in the field picks it up without an update.
-4. Run `MOREAPPS_NETWORK_TESTS=all swift test` to prove every download installs.
+1. In the apps-list repository, edit `apps.json` and **increase `revision`**.
+2. For a new app, set `icon` to an https address of a 160 px PNG (a path
+   relative to `apps.json` works too), so apps already installed can show it.
+3. Publish: `git push origin main` and `git push gitee main` in that
+   repository. Every app in the field picks the change up without an update.
+4. At the next release of this package, copy the file to
+   `Sources/MoreAppsKit/Resources/apps.json` (and add
+   `moreapps-icon-<id>.png` for a new app), then run
+   `MOREAPPS_NETWORK_TESTS=all swift test` to prove every download installs.
+
+**The two published addresses must never change.** They are compiled into every
+app already installed, so the apps-list repository, its `main` branch and the file
+keep their names.
 
 An incompatible change to the file format must use a new file name, so apps
 already in use keep reading `schema` 1.
@@ -226,6 +244,7 @@ the same names, so the dashboards of different apps are comparable.
 | `more_apps_manual_fallback` | `target`, `via` (`disk_image`, `browser`) | the user was sent to finish by hand |
 | `more_apps_open_clicked` | `target` | Open clicked on an installed app |
 | `more_apps_homepage_clicked` | `target` | a row was clicked |
+| `more_apps_badge_clicked` | `target`, `badge` (`github`, `app_store`) | a round icon button beside the main button was clicked |
 | `more_apps_referred_launch` | `source` | reported by the *installed* app, see below |
 
 `target` is the catalog id of the promoted app (`qduo`). No event describes the

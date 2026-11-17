@@ -158,6 +158,9 @@ final class StoreTests: XCTestCase {
                        MoreAppsEvent(name: "more_apps_install_failed",
                                      properties: ["target": "demo", "stage": "verify", "reason": "signature"]))
         XCTAssertEqual(MoreAppsEvent.installSucceeded(demo, seconds: 12).properties, ["target": "demo", "seconds": "12"])
+        XCTAssertEqual(MoreAppsEvent.badgeClicked(demo, badge: .github),
+                       MoreAppsEvent(name: "more_apps_badge_clicked", properties: ["target": "demo", "badge": "github"]))
+        XCTAssertEqual(MoreAppsEvent.badgeClicked(demo, badge: .appStore).properties["badge"], "app_store")
         XCTAssertEqual(MoreAppsEvent.referredLaunch(source: "anydrag"),
                        MoreAppsEvent(name: "more_apps_referred_launch", properties: ["source": "anydrag"]))
     }

@@ -20,6 +20,8 @@
 "downloading.help" = "Cliquez pour annuler le téléchargement";
 "open.help" = "Ouvrir %@";
 "row.help" = "Ouvrir le site web de %@";
+"badge.github.help" = "Voir le code source de %@ sur GitHub";
+"badge.appstore.help" = "Voir %@ dans l’App Store";
 
 /* Entry row on the About page: number of apps */
 "entry.count" = "%ld apps";

@@ -49,10 +49,14 @@ public struct MoreApp: Decodable, Equatable, Identifiable {
     /// Icon location for apps whose icon is not bundled with the package:
     /// an absolute https URL, or a path relative to the catalog's own URL.
     public let icon: String?
+    /// The app's public source repository on GitHub, for an open-source app.
+    /// The page shows a GitHub mark next to the name that opens it.
+    public let github: URL?
     public let install: Install
 
     public init(id: String, name: String, bundleID: String, tagline: [String: String],
-                homepage: URL? = nil, minOS: String? = nil, icon: String? = nil, install: Install) {
+                homepage: URL? = nil, minOS: String? = nil, icon: String? = nil, github: URL? = nil,
+                install: Install) {
         self.id = id
         self.name = name
         self.bundleID = bundleID
@@ -60,11 +64,12 @@ public struct MoreApp: Decodable, Equatable, Identifiable {
         self.homepage = homepage
         self.minOS = minOS
         self.icon = icon
+        self.github = github
         self.install = install
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, bundleID = "bundleId", tagline, homepage, minOS, icon, install
+        case id, name, bundleID = "bundleId", tagline, homepage, minOS, icon, github, install
     }
     private enum InstallKeys: String, CodingKey { case kind, url, urls }
     private enum ArchKeys: String, CodingKey { case arm64, x86_64 }
@@ -84,6 +89,7 @@ public struct MoreApp: Decodable, Equatable, Identifiable {
         homepage = try MoreApp.httpsURL(c.decodeIfPresent(String.self, forKey: .homepage))
         minOS = try c.decodeIfPresent(String.self, forKey: .minOS)
         icon = try c.decodeIfPresent(String.self, forKey: .icon)
+        github = MoreApp.githubURL(try? c.decodeIfPresent(String.self, forKey: .github))
 
         let i = try c.nestedContainer(keyedBy: InstallKeys.self, forKey: .install)
         let kind = try i.decode(String.self, forKey: .kind)
@@ -118,6 +124,16 @@ public struct MoreApp: Decodable, Equatable, Identifiable {
         guard (1...40).contains(id.count), let first = id.unicodeScalars.first else { return false }
         let allowed = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyz0123456789-")
         return first != "-" && id.unicodeScalars.allSatisfy(allowed.contains)
+    }
+
+    /// The link behind the GitHub mark: https, and on github.com itself, so
+    /// the mark can never lead anywhere else. Anything else just means no mark;
+    /// it does not cost the app its place in the list.
+    private static func githubURL(_ string: String?) -> URL? {
+        guard let string, let url = URL(string: string),
+              url.scheme?.lowercased() == "https", url.host?.lowercased() == "github.com",
+              url.path.count > 1 else { return nil }
+        return url
     }
 
     /// Only https links are accepted anywhere in the catalog. A missing value

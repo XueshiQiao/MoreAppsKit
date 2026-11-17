@@ -55,7 +55,56 @@ final class CatalogTests: XCTestCase {
         }
     }
 
+    // MARK: Choosing between the published copies
+
+    func testTheNewestPublishedCopyWinsAndTheFirstAddressBreaksATie() {
+        XCTAssertNil(CatalogLoader.newest([]))
+        XCTAssertEqual(CatalogLoader.newest([(index: 1, revision: 4)]), 1)
+        // One copy lags behind: the newer one is used, wherever it is listed.
+        XCTAssertEqual(CatalogLoader.newest([(index: 0, revision: 3), (index: 1, revision: 4)]), 1)
+        XCTAssertEqual(CatalogLoader.newest([(index: 1, revision: 3), (index: 0, revision: 4)]), 0)
+        // Same revision: the address listed first, whichever answered first.
+        XCTAssertEqual(CatalogLoader.newest([(index: 1, revision: 4), (index: 0, revision: 4)]), 0)
+    }
+
+    func testDefaultAddressesAreTheTwoPublishedCopies() {
+        let urls = MoreAppsDefaults.catalogURLs
+        XCTAssertEqual(urls.map(\.host), ["raw.githubusercontent.com", "gitee.com"])
+        XCTAssertTrue(urls.allSatisfy { $0.scheme == "https" && $0.lastPathComponent == "apps.json" })
+    }
+
     // MARK: Decoding rules
+
+    func testGitHubLinkIsKeptOnlyWhenItPointsAtGitHub() throws {
+        let dmg = #"{"kind":"dmg","url":"https://example.com/a.dmg"}"#
+        let decoded = try catalog("""
+        {"schema":1,"revision":1,"apps":[
+          \(app(id: "open", install: dmg, extra: #""github":"https://github.com/example/open","#)),
+          \(app(id: "closed", install: dmg)),
+          \(app(id: "elsewhere", install: dmg, extra: #""github":"https://example.com/example/open","#)),
+          \(app(id: "plain", install: dmg, extra: #""github":"http://github.com/example/open","#)),
+          \(app(id: "root", install: dmg, extra: #""github":"https://github.com/","#)),
+          \(app(id: "number", install: dmg, extra: #""github":7,"#))
+        ]}
+        """)
+        // A bad link costs the app its GitHub mark, never its place in the list.
+        XCTAssertEqual(decoded.apps.map(\.id), ["open", "closed", "elsewhere", "plain", "root", "number"])
+        XCTAssertEqual(decoded.apps[0].github?.absoluteString, "https://github.com/example/open")
+        XCTAssertEqual(decoded.apps.dropFirst().compactMap(\.github), [])
+    }
+
+    func testBundledAppsLinkToTheirRepositoriesExceptTheOneThatIsNotOpenSource() {
+        for app in MoreAppsCatalog.bundled().apps {
+            if app.id == "pastepaw" {
+                // Its repository holds only the Windows version; the macOS app
+                // is not open source, so it gets no GitHub mark.
+                XCTAssertNil(app.github)
+                continue
+            }
+            XCTAssertEqual(app.github?.host, "github.com", "\(app.id) has no GitHub link")
+            XCTAssertEqual(app.github?.pathComponents.count, 3, "\(app.id): expected /owner/repository")
+        }
+    }
 
     func testDecodesTheThreeInstallShapes() throws {
         let decoded = try catalog("""
