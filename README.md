@@ -247,3 +247,7 @@ MOREAPPS_NETWORK_TESTS=all swift test    # + every app in the catalog, both proc
 The network tests install into a temporary folder, never into `/Applications`.
 They read the signing team from one of the catalog's apps installed in
 `/Applications`, and skip if there is none.
+
+## License
+
+GPL-3.0, the same license as the apps that embed it. See [LICENSE](LICENSE).
