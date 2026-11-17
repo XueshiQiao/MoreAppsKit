@@ -6,7 +6,9 @@ the package downloads the app, checks its signature, puts it in the
 Applications folder and opens it.
 
 It is one Swift package with no dependencies (macOS 13+, SwiftUI + AppKit).
-English and Simplified Chinese are built in.
+English, Simplified Chinese, Japanese, German, Spanish and French are built in
+(the one-line app descriptions exist in English and Chinese; other languages
+show the English one).
 
 ## What the user sees
 
@@ -77,6 +79,8 @@ English and Simplified Chinese are built in.
    ```
 
 5. When the app's language setting changes, set `moreApps.language`.
+   Pass the host's own code as it is (`zh`, `zh-CN`, `ja`): the package picks
+   the nearest language it has, and English when it has none.
 
 Recommended placement, as done in AnyDrag: the page sits at the bottom of the
 settings sidebar, in a separate group next to About, with no badge and nothing

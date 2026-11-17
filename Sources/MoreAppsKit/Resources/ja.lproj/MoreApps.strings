@@ -1,0 +1,32 @@
+/* Buttons */
+"action.get" = "入手";
+"action.open" = "開く";
+"action.retry" = "再試行";
+"action.appstore" = "App Store";
+
+/* Page */
+"featured.label" = "おすすめ";
+"section.available" = "未インストール";
+"section.installed" = "インストール済み";
+"search.prompt" = "アプリを検索";
+"search.empty" = "アプリが見つかりません";
+"requires.macos" = "macOS %@ が必要です";
+"footer.install" = "「入手」を押すと、アプリをダウンロードして「アプリケーション」フォルダに入れ、起動します。";
+"footer.download" = "「入手」を押すと、ブラウザでアプリをダウンロードします。";
+"footer.website" = "作者の Web サイト";
+
+/* Tooltips */
+"installing.help" = "インストール中…";
+"downloading.help" = "クリックでダウンロードを中止";
+"open.help" = "%@ を開く";
+"row.help" = "%@ の Web サイトを開く";
+
+/* Entry row on the About page: number of apps */
+"entry.count" = "%ld 個のアプリ";
+
+/* Install failures */
+"error.download" = "ダウンロードに失敗しました。";
+"error.mount" = "ダウンロードしたファイルを開けませんでした。";
+"error.verify" = "ダウンロードしたファイルは署名の確認に通らなかったため、削除しました。";
+"error.copy" = "アプリを「アプリケーション」フォルダに入れられませんでした。";
+"error.browser" = "ブラウザでダウンロード";

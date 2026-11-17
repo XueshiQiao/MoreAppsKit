@@ -1,0 +1,32 @@
+/* Buttons */
+"action.get" = "Obtenir";
+"action.open" = "Ouvrir";
+"action.retry" = "Réessayer";
+"action.appstore" = "App Store";
+
+/* Page */
+"featured.label" = "À LA UNE";
+"section.available" = "Non installées";
+"section.installed" = "Installées";
+"search.prompt" = "Rechercher des apps";
+"search.empty" = "Aucune app trouvée";
+"requires.macos" = "Nécessite macOS %@";
+"footer.install" = "Obtenir télécharge l’app, la place dans le dossier Applications et l’ouvre.";
+"footer.download" = "Obtenir télécharge l’app avec le navigateur.";
+"footer.website" = "Site web de l’auteur";
+
+/* Tooltips */
+"installing.help" = "Installation…";
+"downloading.help" = "Cliquez pour annuler le téléchargement";
+"open.help" = "Ouvrir %@";
+"row.help" = "Ouvrir le site web de %@";
+
+/* Entry row on the About page: number of apps */
+"entry.count" = "%ld apps";
+
+/* Install failures */
+"error.download" = "Le téléchargement a échoué.";
+"error.mount" = "Impossible d’ouvrir le téléchargement.";
+"error.verify" = "Le téléchargement n’a pas passé la vérification de signature et a été supprimé.";
+"error.copy" = "Impossible de placer l’app dans le dossier Applications.";
+"error.browser" = "Télécharger dans le navigateur";

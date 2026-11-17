@@ -40,7 +40,7 @@ final class CatalogTests: XCTestCase {
         }
     }
 
-    func testBothStringTablesHaveTheSameKeys() throws {
+    func testEveryStringTableHasTheSameKeys() throws {
         func keys(_ language: String) throws -> Set<String> {
             let path = try XCTUnwrap(Bundle.moreAppsKit.path(forResource: language, ofType: "lproj")
                                      ?? Bundle.moreAppsKit.path(forResource: language.lowercased(), ofType: "lproj"))
@@ -50,7 +50,9 @@ final class CatalogTests: XCTestCase {
         }
         let english = try keys("en")
         XCTAssertFalse(english.isEmpty)
-        XCTAssertEqual(english, try keys("zh-Hans"))
+        for language in ["zh-Hans", "ja", "de", "es", "fr"] {
+            XCTAssertEqual(english, try keys(language), "\(language) has different keys than en")
+        }
     }
 
     // MARK: Decoding rules

@@ -116,6 +116,21 @@ final class StoreTests: XCTestCase {
         XCTAssertEqual(store.tagline(of: store.apps[0]), "About one")
     }
 
+    func testAHostsOwnLanguageSpellingFindsTheNearestTable() {
+        let (store, _) = makeStore(language: "zh")        // HyperCapslock calls Chinese `zh`
+        XCTAssertEqual(store.text("action.get"), "获取")
+        XCTAssertEqual(store.tagline(of: store.apps[0]), "关于 one")
+        store.language = "zh-CN"
+        XCTAssertEqual(store.text("action.get"), "获取")
+        store.language = "ja"
+        XCTAssertEqual(store.text("action.open"), "開く")
+        XCTAssertEqual(store.tagline(of: store.apps[0]), "About one")   // no Japanese tagline: English
+        store.language = "de"
+        XCTAssertEqual(store.text("entry.count", 3), "3 Apps")
+        store.language = "pt-BR"                                         // not in the package: English
+        XCTAssertEqual(store.text("action.get"), "Get")
+    }
+
     func testNetworkCatalogReplacesTheCurrentOneButNeverGoesBelowTheBundledCopy() {
         // The store starts from revision 1 (standing in for the bundled copy).
         let (store, _) = makeStore()

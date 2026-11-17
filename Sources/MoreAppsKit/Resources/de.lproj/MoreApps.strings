@@ -1,0 +1,32 @@
+/* Buttons */
+"action.get" = "Laden";
+"action.open" = "Öffnen";
+"action.retry" = "Erneut versuchen";
+"action.appstore" = "App Store";
+
+/* Page */
+"featured.label" = "EMPFOHLEN";
+"section.available" = "Nicht installiert";
+"section.installed" = "Installiert";
+"search.prompt" = "Apps suchen";
+"search.empty" = "Keine Apps gefunden";
+"requires.macos" = "Erfordert macOS %@";
+"footer.install" = "„Laden“ lädt die App, legt sie in den Ordner „Programme“ und öffnet sie.";
+"footer.download" = "„Laden“ lädt die App mit dem Browser.";
+"footer.website" = "Website des Autors";
+
+/* Tooltips */
+"installing.help" = "Wird installiert …";
+"downloading.help" = "Klicken, um den Download abzubrechen";
+"open.help" = "%@ öffnen";
+"row.help" = "Website von %@ öffnen";
+
+/* Entry row on the About page: number of apps */
+"entry.count" = "%ld Apps";
+
+/* Install failures */
+"error.download" = "Download fehlgeschlagen.";
+"error.mount" = "Der Download konnte nicht geöffnet werden.";
+"error.verify" = "Der Download hat die Signaturprüfung nicht bestanden und wurde gelöscht.";
+"error.copy" = "Die App konnte nicht in den Ordner „Programme“ gelegt werden.";
+"error.browser" = "Im Browser laden";

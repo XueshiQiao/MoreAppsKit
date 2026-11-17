@@ -520,11 +520,19 @@ public final class MoreAppsStore: ObservableObject, @unchecked Sendable {
 
     private var stringsBundle: Bundle {
         guard let language else { return .module }
-        // SwiftPM may store the folder as `zh-hans.lproj`; try both spellings.
-        for name in [language, language.lowercased()] {
-            if let path = Bundle.module.path(forResource: name, ofType: "lproj"), let bundle = Bundle(path: path) {
-                return bundle
-            }
+        // A host passes its own spelling of the language (`zh`, `zh-CN`,
+        // `zh-hans`), and SwiftPM may store the folder as `zh-hans.lproj`. Take
+        // the table with that exact name, else one for the same base language,
+        // else English, so an app set to a language this package does not have
+        // shows English rather than whatever the system prefers.
+        let wanted = language.lowercased()
+        let base = wanted.split(separator: "-").first.map(String.init) ?? wanted
+        let available = Bundle.module.localizations
+        let match = available.first { $0.lowercased() == wanted }
+            ?? available.first { $0.lowercased() == base || $0.lowercased().hasPrefix(base + "-") }
+            ?? available.first { $0.lowercased() == "en" }
+        if let match, let path = Bundle.module.path(forResource: match, ofType: "lproj"), let bundle = Bundle(path: path) {
+            return bundle
         }
         return .module
     }
