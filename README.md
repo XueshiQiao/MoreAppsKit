@@ -250,6 +250,7 @@ the same names, so the dashboards of different apps are comparable.
 | `more_apps_open_clicked` | `target` | Open clicked on an installed app |
 | `more_apps_homepage_clicked` | `target` | a row was clicked |
 | `more_apps_badge_clicked` | `target`, `badge` (`github`, `app_store`) | a round icon button beside the main button was clicked |
+| `more_apps_catalog_fetched` | `used` (`github`, `jsdelivr`, `jsdelivr_fastly`, `jsdelivr_gcore`, or `none`), `revision`, and one property per address asked, named like the values of `used`, each `ok` or `failed` | the list was looked for on the network: at most once every 6 hours, when the page is opened. Shows which hosts are reachable for real users; split it by country in the dashboard. |
 | `more_apps_referred_launch` | `source` | reported by the *installed* app, see below |
 
 `target` is the catalog id of the promoted app (`qduo`). No event describes the

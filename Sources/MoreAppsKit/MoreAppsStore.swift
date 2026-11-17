@@ -282,8 +282,14 @@ public final class MoreAppsStore: ObservableObject, @unchecked Sendable {
         if let lastCatalogFetch, Date().timeIntervalSince(lastCatalogFetch) < Self.catalogRefreshInterval { return }
         lastCatalogFetch = Date()
         Task { [weak self, loader] in
-            guard let loaded = await loader.fetch() else { return }
-            await MainActor.run { [weak self] in self?.adopt(loaded) }
+            let report = await loader.fetch()
+            await MainActor.run { [weak self] in
+                guard let self else { return }
+                // Reported even when nothing answered: that is the case worth
+                // knowing about, a network where no address is reachable.
+                self.emit(.catalogFetched(report))
+                if let loaded = report.loaded { self.adopt(loaded) }
+            }
         }
     }
 

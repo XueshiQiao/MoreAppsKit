@@ -102,6 +102,43 @@ public struct MoreAppsEvent: Equatable {
         MoreAppsEvent(name: "more_apps_badge_clicked", properties: ["target": app.id, "badge": badge.rawValue])
     }
 
+    /// The list of apps was looked for on the network (at most once every 6
+    /// hours, when the page is opened). Says which of the published addresses
+    /// answered, so the author can see which hosts work from where:
+    ///
+    ///   used      the address whose answer was taken, or `none`
+    ///   revision  the revision of that answer (absent when `used` is `none`)
+    ///   <label>   one property per address asked: `ok` or `failed`
+    ///
+    /// For example `used: github, revision: 3, github: ok, jsdelivr: ok,
+    /// jsdelivr_fastly: failed, jsdelivr_gcore: ok`.
+    static func catalogFetched(_ report: CatalogLoader.FetchReport) -> MoreAppsEvent {
+        var properties: [String: String] = [:]
+        for outcome in report.outcomes {
+            properties[sourceLabel(for: outcome.url)] = outcome.answered ? "ok" : "failed"
+        }
+        // Set last, so an address can never overwrite them.
+        properties["used"] = report.loaded?.source.map(sourceLabel(for:)) ?? "none"
+        if let loaded = report.loaded { properties["revision"] = String(loaded.catalog.revision) }
+        return MoreAppsEvent(name: "more_apps_catalog_fetched", properties: properties)
+    }
+
+    /// A short, stable name for a catalog address, used as a property name and
+    /// value in `more_apps_catalog_fetched`. The hosts the package uses by
+    /// default have fixed names; any other host is spelled out with `_` for
+    /// every character that is not a letter or digit.
+    static func sourceLabel(for url: URL) -> String {
+        let host = (url.host ?? "unknown").lowercased()
+        switch host {
+        case "raw.githubusercontent.com": return "github"
+        case "cdn.jsdelivr.net":          return "jsdelivr"
+        case "fastly.jsdelivr.net":       return "jsdelivr_fastly"
+        case "gcore.jsdelivr.net":        return "jsdelivr_gcore"
+        default:
+            return String(host.map { $0.isASCII && ($0.isLetter || $0.isNumber) ? $0 : "_" })
+        }
+    }
+
     /// For the app on the receiving end: this launch was started by another
     /// app's More Apps page right after installing. `source` is that app's id.
     public static func referredLaunch(source: String) -> MoreAppsEvent {

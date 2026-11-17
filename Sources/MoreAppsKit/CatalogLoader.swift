@@ -50,15 +50,29 @@ final class CatalogLoader {
         return Loaded(catalog: catalog, source: source)
     }
 
-    /// Asks every catalog address at the same time and returns the valid
-    /// answer with the highest revision, saving it to the cache.
+    /// What one round of asking the published addresses produced.
+    struct FetchReport {
+        /// One address that was asked, and whether it returned a valid catalog.
+        struct Outcome: Equatable {
+            let url: URL
+            let answered: Bool
+        }
+        /// The answer to use; nil when no address returned a valid catalog.
+        let loaded: Loaded?
+        /// Every address, in the configured order.
+        let outcomes: [Outcome]
+    }
+
+    /// Asks every catalog address at the same time and takes the valid answer
+    /// with the highest revision, saving it to the cache. The report also says
+    /// which addresses answered, for the `more_apps_catalog_fetched` event.
     ///
     /// The addresses are copies of one file on different hosts. Not every
     /// network reaches each host, so waiting for one before trying the next
     /// would cost a full timeout; and one copy can lag behind the other, so the
     /// first answer is not necessarily the newest. When two answers have the
     /// same revision the address listed first wins.
-    func fetch() async -> Loaded? {
+    func fetch() async -> FetchReport {
         typealias Answer = (index: Int, url: URL, data: Data, catalog: MoreAppsCatalog)
         let answers = await withTaskGroup(of: Answer?.self) { group -> [Answer] in
             for (index, url) in urls.enumerated() {
@@ -74,13 +88,17 @@ final class CatalogLoader {
             }
             return found
         }
+        let answered = Set(answers.map(\.index))
+        let outcomes = urls.enumerated().map { FetchReport.Outcome(url: $0.element, answered: answered.contains($0.offset)) }
         guard let best = Self.newest(answers.map { (index: $0.index, revision: $0.catalog.revision) }),
-              let answer = answers.first(where: { $0.index == best }) else { return nil }
+              let answer = answers.first(where: { $0.index == best }) else {
+            return FetchReport(loaded: nil, outcomes: outcomes)
+        }
         try? FileManager.default.createDirectory(at: cacheDirectory, withIntermediateDirectories: true)
         try? answer.data.write(to: cacheDirectory.appendingPathComponent(Self.catalogFile), options: .atomic)
         try? answer.url.absoluteString.write(to: cacheDirectory.appendingPathComponent(Self.sourceFile),
                                              atomically: true, encoding: .utf8)
-        return Loaded(catalog: answer.catalog, source: answer.url)
+        return FetchReport(loaded: Loaded(catalog: answer.catalog, source: answer.url), outcomes: outcomes)
     }
 
     /// Which answer to use: the highest revision, and among equals the address

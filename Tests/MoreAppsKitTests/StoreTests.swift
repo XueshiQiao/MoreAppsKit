@@ -148,6 +148,30 @@ final class StoreTests: XCTestCase {
         XCTAssertEqual(store.apps.map(\.id), ["one", "two"])
     }
 
+    func testCatalogFetchEventSaysWhichAddressesAnsweredAndWhichWasUsed() throws {
+        let github = try XCTUnwrap(URL(string: "https://raw.githubusercontent.com/o/r/main/apps.json"))
+        let cdn = try XCTUnwrap(URL(string: "https://cdn.jsdelivr.net/gh/o/r@main/apps.json"))
+        let fastly = try XCTUnwrap(URL(string: "https://fastly.jsdelivr.net/gh/o/r@main/apps.json"))
+        let other = try XCTUnwrap(URL(string: "https://lists.example.com/apps.json"))
+        let catalog = MoreAppsCatalog(revision: 7, apps: [app("one")])
+
+        let some = CatalogLoader.FetchReport(
+            loaded: .init(catalog: catalog, source: cdn),
+            outcomes: [.init(url: github, answered: false), .init(url: cdn, answered: true),
+                       .init(url: fastly, answered: true), .init(url: other, answered: false)])
+        XCTAssertEqual(MoreAppsEvent.catalogFetched(some),
+                       MoreAppsEvent(name: "more_apps_catalog_fetched", properties: [
+                           "used": "jsdelivr", "revision": "7", "github": "failed", "jsdelivr": "ok",
+                           "jsdelivr_fastly": "ok", "lists_example_com": "failed",
+                       ]))
+
+        // No address reachable: still an event, and it says so.
+        let none = CatalogLoader.FetchReport(
+            loaded: nil, outcomes: [.init(url: github, answered: false), .init(url: cdn, answered: false)])
+        XCTAssertEqual(MoreAppsEvent.catalogFetched(none).properties,
+                       ["used": "none", "github": "failed", "jsdelivr": "failed"])
+    }
+
     func testEventPropertiesUseTheAgreedNames() {
         let demo = app("demo")
         XCTAssertEqual(MoreAppsEvent.getClicked(demo, placement: .featured),
