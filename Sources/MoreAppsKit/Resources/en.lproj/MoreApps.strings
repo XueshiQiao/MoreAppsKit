@@ -1,0 +1,32 @@
+/* Buttons */
+"action.get" = "Get";
+"action.open" = "Open";
+"action.retry" = "Retry";
+"action.appstore" = "App Store";
+
+/* Page */
+"featured.label" = "FEATURED";
+"section.available" = "Not Installed";
+"section.installed" = "Installed";
+"search.prompt" = "Search Apps";
+"search.empty" = "No apps found";
+"requires.macos" = "Requires macOS %@";
+"footer.install" = "Get downloads the app, puts it in your Applications folder and opens it.";
+"footer.download" = "Get downloads the app with your browser.";
+"footer.website" = "Author's Website";
+
+/* Tooltips */
+"installing.help" = "Installing…";
+"downloading.help" = "Click to cancel the download";
+"open.help" = "Open %@";
+"row.help" = "Open the %@ website";
+
+/* Entry row on the About page: number of apps */
+"entry.count" = "%ld apps";
+
+/* Install failures */
+"error.download" = "Download failed.";
+"error.mount" = "The download could not be opened.";
+"error.verify" = "The download did not pass the signature check and was deleted.";
+"error.copy" = "The app could not be put in the Applications folder.";
+"error.browser" = "Download in Browser";

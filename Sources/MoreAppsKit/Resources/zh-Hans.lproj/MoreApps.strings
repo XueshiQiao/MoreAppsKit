@@ -1,0 +1,32 @@
+/* Buttons */
+"action.get" = "获取";
+"action.open" = "打开";
+"action.retry" = "重试";
+"action.appstore" = "App Store";
+
+/* Page */
+"featured.label" = "推荐";
+"section.available" = "未安装";
+"section.installed" = "已安装";
+"search.prompt" = "搜索应用";
+"search.empty" = "没有找到应用";
+"requires.macos" = "需要 macOS %@";
+"footer.install" = "点「获取」会下载这个应用，把它放进「应用程序」文件夹，然后打开它。";
+"footer.download" = "点「获取」会用浏览器下载这个应用。";
+"footer.website" = "作者的个人网站";
+
+/* Tooltips */
+"installing.help" = "正在安装…";
+"downloading.help" = "点一下取消下载";
+"open.help" = "打开 %@";
+"row.help" = "打开 %@ 的主页";
+
+/* Entry row on the About page: number of apps */
+"entry.count" = "%ld 个";
+
+/* Install failures */
+"error.download" = "下载失败。";
+"error.mount" = "下载的安装包打不开。";
+"error.verify" = "下载的安装包没有通过签名校验，已经删除。";
+"error.copy" = "无法把应用放进「应用程序」文件夹。";
+"error.browser" = "在浏览器里下载";
